@@ -1,0 +1,118 @@
+#Deleting a votePod in Kubernetes
+
+
+8. Now try to delete the Pods one by one (first voting Pod, then worker pod, then db pod) and see what happens to the voting and result app after deleting.
+
+"☝️ Delete them in same order 
+1st ► VOTE pod ► Observe what happens both in frontEnd & in Unix
+2nd ► WORKER pod  ► Observe what happens both in frontEnd & in Unix
+3rd ► DB pod ► Observe what happens both in frontEnd & in Unix"
+
+
+1st:VOTE pod ►
+
+
+kubectl get pods
+then selecte pod and then delete it
+
+kubectl delete pod vote-7d884dd585-hgssr
+
+After Deleting the Voting Pod: The voting app stops accepting votes, and users see errors in the UI.
+
+The voting interface will likely show an error message when trying to submit a vote, such as "Service unavailable" or "Cannot connect to the server."
+Users will not be able to cast votes.
+
+#output:
+NAME                      READY   STATUS    RESTARTS      AGE
+db-58cc845644-mqbd6       1/1     Running   0             2m37s
+redis-6878558678-dqrr2    1/1     Running   0             7h33m
+result-86bc6f7b5d-gwq6n   1/1     Running   1 (2m6s ago)    7h33m
+vote-7d884dd585-8mzvb     1/1     Running   0             10m
+worker-6fc5d5b668-k4bl2   1/1     Running   1 (2m6s ago)    4m57s
+
+Pod Status: The database pod will show as "Terminating" and will eventually be removed from the list of active pods when you check:
+
+
+
+2nd:-WORKER pod
+
+kubectl get pods
+kubectl delete pod worker-6fc5d5b668-khv96
+pod "worker-6fc5d5b668-khv96" deleted
+
+After Deleting the Worker Pod: The results page remains static with stale data and cannot process new votes.
+
+The results page may continue to display the last known results, but it will not update with new votes.
+If users try to refresh the results page, they may see stale data or an error indicating that the worker service is unavailable.
+
+
+#output:
+NAME                      READY   STATUS    RESTARTS      AGE
+db-58cc845644-mqbd6       1/1     Running   0             2m37s
+redis-6878558678-dqrr2    1/1     Running   0             7h33m
+result-86bc6f7b5d-gwq6n   1/1     Running   1 (2m6s ago)    7h33m
+vote-7d884dd585-8mzvb     1/1     Running   0             10m
+worker-6fc5d5b668-k4bl2   1/1     Running   1 (2m6s ago)    4m57s
+
+Pod Status: The database pod will show as "Terminating" and will eventually be removed from the list of active pods when you check:
+
+
+
+3rd:-DB pod
+and
+10. what happens after db pod deletion?
+
+
+kubectl delete pod db-58cc845644-gxn8n
+pod "db-58cc845644-gxn8n" deleted
+
+
+Both applications will become non-functional, showing errors about database connectivity.
+Users trying to submit votes will encounter errors, and the results page will fail to load any data, possibly displaying a "Database unavailable" message.
+
+After Deleting the Database Pod: Both applications become non-functional, with errors indicating inability to connect to the database.
+
+#output:
+NAME                      READY   STATUS    RESTARTS      AGE
+db-58cc845644-mqbd6       1/1     Running   0             2m37s
+redis-6878558678-dqrr2    1/1     Running   0             7h33m
+result-86bc6f7b5d-gwq6n   1/1     Running   1 (2m6s ago)    7h33m
+vote-7d884dd585-8mzvb     1/1     Running   0             10m
+worker-6fc5d5b668-k4bl2   1/1     Running   1 (2m6s ago)    4m57s
+
+Pod Status: The database pod will show as "Terminating" and will eventually be removed from the list of active pods when you check:
+
+
+11. complete the assignment by making the result pod work. (if it is not working)
+
+AnsWer:-
+
+root@ip-172-31-33-69:~/example-voting-app/k8s-specifications# kubectl get pods
+NAME                      READY   STATUS    RESTARTS       AGE
+db-58cc845644-mqbd6       1/1     Running   0              2m37s
+redis-6878558678-dqrr2    1/1     Running   0              7h33m
+result-86bc6f7b5d-gwq6n   1/1     Running   1 (2m6s ago)   7h33m
+vote-7d884dd585-8mzvb     1/1     Running   0              10m
+worker-6fc5d5b668-k4bl2   1/1     Running   1 (2m6s ago)   4m57s
+root@ip-172-31-33-69:~/example-voting-app/k8s-specifications#
+
+
+Redeployment:
+
+Successfully redeployed pods using kubectl apply -f ..
+
+
+
+Voting App:
+
+Vote Submission Fails: Users attempting to submit votes will receive error messages, such as "Unable to connect to the database" or "Service unavailable."
+No New Votes Processed: The application cannot record or process any new votes, rendering the voting functionality inoperative.
+Results App:
+
+Stale Results: The results page may continue to display the last known vote counts but will not update as no new data can be retrieved.
+Error Messages: Refreshing the results page will likely produce errors indicating a failure to connect to the database.
+System Behavior
+
+Pod Status: The database pod will show as "Terminating" and will eventually be removed from the list of active pods when you check:
+
+In summary, deleting the database pod disrupts both the voting and results functionalities, causing application failures and preventing any new data from being processed or retrieved.
